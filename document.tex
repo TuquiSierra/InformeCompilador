@@ -136,9 +136,9 @@
 %-----------------------------------------------------------------------------------
 \section{Lexer y Parser}
 
-Para resolver la sintáctica del compilador se utilizó el módulo de Python \textbf{PLY}. \textbf{PLY} es una implementación pura de Python de las populares herramientas de construcción de compiladores \textit{lex} y \textit{yacc}, generando el primer \textbf{AST} del proceso de compilación.
+Para resolver la sintáctica del compilador se utilizó el módulo de Python \textbf{PLY} que implementa las populares herramientas de construcción de compiladores \textit{lex} y \textit{yacc}, generando el primer \textbf{AST} del proceso de compilación.
 
-\subsection{Tokenización con \textit{lex}}
+\subsection{Tokenización con lex}
 
 \begin{enumerate}
 	\item Creación de los tokens: 
@@ -156,6 +156,7 @@ Para resolver la sintáctica del compilador se utilizó el módulo de Python \te
 	Para tokens mas complejos se definieron funciones:
 	
 	\begin{algorithm}
+		\caption{Ejemplo 1}
 		\begin{algorithmic}
 			\STATE def t\_STRING(t):
 			\STATE $\;\;\; $ r'""'
@@ -165,6 +166,25 @@ Para resolver la sintáctica del compilador se utilizó el módulo de Python \te
 	\end{algorithm}
 	\item Creacion del lexer: $ lexer = lex.lex()$
 \end{enumerate}
+
+\subsection{Parsing con yacc}
+
+Una vez terminado el proceso de tokenización se realiza el proceso de parsing utilizando la herramienta \textit{yacc}. Luego de la creación de una gramática libre del contexto \textit{yacc} generará un parser \textbf{LALR}.\\
+
+Cada regla de la gramática será definida por una función donde el \textbf{string} de documentación de esa función contiene la especificación apropiada. Las declaraciones que conforman el cuerpo de la función implementan las acciones semánticas de la regla junto con las definiciones de los nodos del \textbf{AST}.
+
+\begin{algorithm}
+	\caption{Ejemplo 2}
+	\begin{algorithmic}
+		\STATE def p\_atom\_atring(p):
+		\STATE $\;\;\; $ '''atom : STRING'''
+		\STATE $\;\;\; $ p[0].add\_location(p.lineno(1),
+		\STATE $\;\;\; $ p[0] = StringNode(p[1])
+		\STATE $\;\;\; $ find\_column(p.lexer.lexdata, p.lexpos(1)))
+	\end{algorithmic}
+\end{algorithm}
+
+Al finalizar el proceso de parsing, estarán todas las condiciones creadas para iniciar el chequeo semántico.
 
 \section{Chequeo semántico}
 
