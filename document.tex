@@ -26,6 +26,8 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{jcematcom}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
 \usepackage{color}
@@ -132,6 +134,37 @@
 %===================================================================================
 % Desarrollo
 %-----------------------------------------------------------------------------------
+\section{Lexer y Parser}
+
+Para resolver la sintáctica del compilador se utilizó el módulo de Python \textbf{PLY}. \textbf{PLY} es una implementación pura de Python de las populares herramientas de construcción de compiladores \textit{lex} y \textit{yacc}, generando el primer \textbf{AST} del proceso de compilación.
+
+\subsection{Tokenización con \textit{lex}}
+
+\begin{enumerate}
+	\item Creación de los tokens: 
+	Una instancia de objeto \textbf{LexToken} (llamemos a este objeto \textbf{t} ) tiene los siguientes atributos:
+	\begin{itemize}
+		\item \textbf{t.type} que es el tipo de token (por ejemplo: 'INT' , 'PLUS' , etc.).
+		\item \textbf{t.value} que es el lexema
+		\item \textbf{t.lineno} que es el número de línea actual
+	\end{itemize} 
+
+	\item Creación de las reglas: Las reglas de expresiones regulares pueden definirse como un \textbf{string} o como una función. En cualquier caso, el nombre de la variable tiene el prefijo \textbf{t\_} para denotar que es una regla para hacer coincidir tokens.
+	
+	Para tokens simples, la expresión regular se especificó como \textbf{string}: $t\_PLUS = r'\backslash+'$
+	
+	Para tokens mas complejos se definieron funciones:
+	
+	\begin{algorithm}
+		\begin{algorithmic}
+			\STATE def t\_STRING(t):
+			\STATE $\;\;\; $ r'""'
+			\STATE $\;\;\; $ t.lexer.string\_start = t.lexer.lexpos
+			\STATE $\;\;\; $ t.lexer.begin('string')
+		\end{algorithmic}
+	\end{algorithm}
+	\item Creacion del lexer: $ lexer = lex.lex()$
+\end{enumerate}
 
 \section{Chequeo semántico}
 
