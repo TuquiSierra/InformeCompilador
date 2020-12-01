@@ -213,7 +213,7 @@ Para representar un bloque abstracto de código CIL utilizamos una clase llamada
 Para convertir un AST de \textit{COOL} a un AST de CIL visitaremos cada uno de los nodos del primer AST y generaremos un \lstinline|CILBlock| correspondiente, donde cada uno de los elementos del \lstinline|body| consiste en un nodo del AST de CIL.
 
 \subsubsection{Ejemplo: asignación}
-Sea el código en COOL \lstinline|c<-a+b|, parseado a un árbol de la forma \lstinline|AssignNode(VarNode(a),...expression...)| y con chequeo semántico perfecto. 
+Sea el código en \textit{COOL} \lstinline|c<-a+b|, parseado a un árbol de la forma \lstinline|AssignNode(VarNode(a),...expression...)| y con chequeo semántico perfecto. 
 
 \subparagraph{AssignNode}: El nodo más externo creará un \lstinline|CILBlock| de la forma:
 	\begin{lstlisting}
