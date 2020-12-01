@@ -64,7 +64,7 @@
 %-----------------------------------------------------------------------------------
 % Título
 %-----------------------------------------------------------------------------------
-\title{Proyecto de simulación de agentes}
+\title{Compilador para lenguaje COOL}
 
 %-----------------------------------------------------------------------------------
 % Autores
@@ -132,7 +132,147 @@
 %===================================================================================
 % Desarrollo
 %-----------------------------------------------------------------------------------
+
+\section{Chequeo semántico}
+
+Para realizar el chequeo semántico se utilizó un \lstinline|visitor| de una pasada que realiza las siguientes acciones sobre un nodo:
+
+\begin{itemize}
+	\item Aplica el \lstinline|visitor| correspondiente a las expresiones hijas involucradas y de éste se obtiene el tipo estático inferido de cada una. 
+	\item Se aplican las reglas de chequeo de tipos definidas para cada una de las operaciones para detectar errores. 
+	\item Se infiere el tipo estático de la expresión representada por el nodo y se retorna para ser utilizado por sus padres. 
+\end{itemize}
+
+\subsection{CoolType}
+Para auxiliarnos en el chequeo semántico definimos una clase \lstinline|CoolType| que envuelve la significancia de un tipo en \textit{COOL}. 
+
+Contiene los atributos:
+
+\begin{itemize}
+	\item \lstinline|name|: Representa el nombre del tipo. 
+	\item \lstinline|inherits|: Determina si la clase es heredera de alguna clase definida en el programa. 
+	\item \lstinline|parent|: Es una instancia \lstinline|CoolType| que representa el padre de la clase definida. 
+	\item \lstinline|methods|: Contiene todos los métodos definidos por la clase (De tipo \lstinline|CoolTypeMethod|). 
+	\item \lstinline|attributes|: Contiene los atributos definidos por la clase (De tipo \lstinline|CoolTypeAttribute|).
+\end{itemize}
+
+y los métodos: 
+
+\begin{itemize}
+	\item \lstinline|get_method|: Obtiene el método determinado por el argumento \lstinline|id|, teniendo en cuenta si pudo haber sido definido por la clase guardada en \lstinline|parent|. 
+	\item \lstinline|get_all_methods|: Obtiene todos los métodos definidos por la clase. 
+	\item \lstinline|add_method|: Agrega el método con nombre \lstinline|id| en el conjunto de métodos de la clase. Esta función tiene implícitas las reglas de definición de métodos. 
+	\item Análogos métodos se declaran para los atributos. 
+\end{itemize}
+
 \section{Generación de código}
+
+\subsection{Código Intermedio: CIL}
+Para facilitar el paso desde la sintaxis de \textit{COOL} hacia MIPS, nos servimos de CIL como lenguaje intermedio. 
+
+Para generar un AST de CIL utilizamos el patrón \lstinline|visitor| sobre los nodos del AST de \textit{COOL}. La selección del visitor adecuado se realiza a partir de un diccionario de la forma \lstinline|{type:visitor}|.
+
+\subsubsection{AST}
+
+Un programa CIL se representa con un \lstinline|ProgramNode| y consta de cuatro partes:
+
+\begin{enumerate}
+	\item Una sección \textit{data}, representada por una lista de \lstinline|DataNode|, que a su vez consiste en la declaración de una constante involucrada en el programa. 
+	\item Una sección \textit{types}, representada por una lista de \lstinline|TypeNode|, que a su vez consiste en la declaración de un tipo con los identificadores de sus métodos y sus atributos. 
+	\item Una sección \textit{text}, representada por una lista de \lstinline|DefFuncNode|, que a su vez consiste en la declaración de una función.
+\end{enumerate}
+
+\subparagraph{DataNode}
+
+Un nodo de tipo \textit{data} consiste en una constante de tipo \textit{string} y una etiqueta que lo mapea:
+
+\begin{center}
+	\lstinline|data_1="Hello world\n"|
+\end{center}
+
+\subparagraph{TypeNode}
+
+Un nodo de tipo \textit{type} consiste en una etiqueta que representa el nombre del tipo y un conjunto de \textit{features} que pueden ser atributos con su tipo o métodos. Un método será mapeado al método real a ejecutar de ser llamado éste. Se representa de la forma:
+
+\begin{center}
+	\begin{lstlisting}
+		Type:
+			attr1: 	  Type_1
+			method_1: actual_method_1
+			method_2: actual_method_2
+	\end{lstlisting}
+\end{center}
+
+\subparagraph{DefFuncNode}
+Un nodo de tipo {deffunc} constituye la declaración de un cuerpo de función, dentro de ella se ejecutará un bloque de código CIL, siguiendo las convenciones usuales. 
+
+
+\subsubsection{CILBlock}
+Para representar un bloque abstracto de código CIL utilizamos una clase llamada \lstinline|CILBlock| que contiene un \lstinline|body|, un \lstinline|locals| y un \lstinline|value|. 
+
+Para convertir un AST de \textit{COOL} a un AST de CIL visitaremos cada uno de los nodos del primer AST y generaremos un \lstinline|CILBlock| correspondiente, donde cada uno de los elementos del \lstinline|body| consiste en un nodo del AST de CIL.
+
+\subsubsection{Ejemplo: asignación}
+Sea el código en COOL \lstinline|c<-a+b|, parseado a un árbol de la forma \lstinline|AssignNode(VarNode(a),...expression...)| y con chequeo semántico perfecto. 
+
+\subparagraph{AssignNode}: El nodo más externo creará un \lstinline|CILBlock| de la forma:
+	\begin{lstlisting}
+	
+	body = concat(expression.body, [ 
+		CILAssignNode(a, expression.value)
+	])
+	value = expression.value
+	
+	locals = concat(expression.locals, [
+		a
+	]
+	
+	\end{lstlisting}
+
+\subsection{Código MIPS}
+
+Para generar código MIPS utilizamos el mismo patrón \lstinline|visitor| sobre los nodos del AST de CIL generado, para entonces generar un AST de código MIPS de forma similar a la generación de código intermedio. 
+
+\subsubsection{Utilización de registros}
+Los registros se utilizaron de la siguiente forma:
+\begin{itemize}
+	\item \lstinline|$fp| para referenciar el inicio de la memoria correspondiente a la función actual.
+	\item \lstinline|$sp| para referenciar la posición donde se encuentra el tope de la pila. 
+	\item \lstinline|$t0-t9| para realizar operaciones intermedias. 
+	\item \lstinline|$ra| para guardar la dirección de retorno después de la ejecución de una función. 
+	\item \lstinline|$v0| para guardar el valor de retorno de una función. 
+	\item \lstinline|$a0-$a3| para guardar los argumentos necesarios en la ejecución de los \lstinline|syscall|
+\end{itemize}
+
+\subsubsection{Utilización de memoria}
+
+\subparagraph{Paso de argumentos:}
+	 En el paso de argumentos utilizamos la pila, liberando la memoria utilizada al terminar la ejecución de la función. 
+\subparagraph{Creación de una instancia:}
+	Para la creación de una instancia reservamos memoria utilizando \lstinline|sbrk|. Cada una de las instancias tendrá como atributos especiales su tipo y su tamaño, en la primera y última posición respectivamente; por tanto, al reservar memoria tenemos que hacerlo con un tamaño igual a la cantidad de atributos más dos.
+
+\subparagraph{Localización de variables:}
+	Para la localización de variables utilizamos la pila, y el acceso a cada una se controla a partir de un \textit{offset} que las representa dentro de \lstinline|$fp| para cada función. Este control se realiza a través de un diccionario en tiempo de compilación. 
+	
+\subsubsection{Llamado a función}
+	Para realizar un llamado a función se realizan los siguientes pasos:
+		\begin{enumerate}
+			\item Se salvan los registros utilizados: \lstinline|$fp, $ra|. (son los únicos que trascienden un llamado de función).
+			\item Se pasan los argumentos a la pila.
+			\item Se realiza la instrucción \lstinline|Jal function_name|, que guarda la dirección de retorno en el registro \lstinline|$ra|.
+			\item Se sacan los argumentos de la pila. 
+			\item Se restauran los registros. 
+			\item Se toma el valor de retorno de \lstinline|$v0|. 
+		\end{enumerate}
+	La función llamada debe:
+		\begin{enumerate}
+			\item Mover \lstinline|$fp| a donde se encuentra \lstinline|$sp|. 
+			\item Tomar sus argumentos de la pila. 
+			\item Reservar memoria para todas sus variables locales. 
+			\item Realizar las instrucciones que le correponden. 
+			\item Liberar el espacio de la pila correspondiente a todas las variables locales. 
+			\item Realizar un salto al contenido del registro \lstinline|$ra|. 
+		\end{enumerate}
 \label{end}
 \end{document}
 
