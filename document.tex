@@ -299,6 +299,10 @@ Los registros se utilizaron de la siguiente forma:
 
 \subsubsection{Utilización de memoria}
 
+\subparagraph{Representación de tipos:}
+	Los tipos se representan en memoria de la siguiente forma:
+	\includegraphics[scale=0.7]{Instancia.png}
+
 \subparagraph{Paso de argumentos:}
 	 En el paso de argumentos utilizamos la pila, liberando la memoria utilizada al terminar la ejecución de la función. 
 \subparagraph{Creación de una instancia:}
@@ -308,7 +312,20 @@ Los registros se utilizaron de la siguiente forma:
 	Para la localización de variables utilizamos la pila, y el acceso a cada una se controla a partir de un \textit{offset} que las representa dentro de \lstinline|$fp| para cada función. Este control se realiza a través de un diccionario en tiempo de compilación. 
 	
 \subsubsection{Llamado a función}
-	Para realizar un llamado a función se realizan los siguientes pasos:
+
+\subparagraph{Tabla Virtual:}
+Al inicio de la ejecución del programa se construye una Tabla Virtual de la siguiente forma:
+
+\begin{enumerate}
+	\item Se reserva un espacio para cada tipo en la sección \textit{data}. 
+	\item Se guarda, para la función X, la dirección de la etiqueta de la función Y adecuada, definida desde la generación de código intermedio. El \textit{offset} respecto al inicio de la tabla virtual se prefija en compilación de manera tal que si \textit{A} implementa \textit{X} y \textit{B} lo redefine, entonces \textit{X} se encuentra en el mismo \textit{offset} en ambas \textit{Tablas Virtuales}.
+\end{enumerate}
+
+\subparagraph{Decisión de la función a llamar:}
+Para decidir qué función se debe llamar, basta localizar el \textit{offset} predefinido en compilación de la función, a partir de la dirección de \textit{Tabla Virtual} del tipo de la instancia, guardada como atriubuto en ésta.
+
+
+\subparagraph{Pasos del llamado a función:}
 		\begin{enumerate}
 			\item Se salvan los registros utilizados: \lstinline|$fp, $ra|. (son los únicos que trascienden un llamado de función).
 			\item Se pasan los argumentos a la pila.
@@ -327,6 +344,16 @@ Los registros se utilizaron de la siguiente forma:
 			\item Realizar un salto al contenido del registro \lstinline|$ra|. 
 		\end{enumerate}
 \label{end}
+
+\subsubsection{Orden de herencia en MIPS para instrucción \lstinline|case|}
+La relación de herencia se determina a través de un atributo llamado \textit{order}, creado desde la generación de código intermedio como atributo especial. Si A hereda de B, entonces seguramente $order(A)<order(B)$. 
+
+De esta forma garantizamos que en la ejecución de una instrucción \textit{case}, podamos decidirnos por la rama cuyo $order(type)$ se el menor tal que $order(type)\geq order(type(expression))$. 
+
+\subsubsection{Constructor de instancia en MIPS}
+
+Para cada uno de los tipos, definimos una función especial llamada \lstinline|__init__|, que se crea en la fase de generación de código intermedio y se encarga de manejar la inicialización de los atributos heredados y los propios. 
+
 \end{document}
 
 %===================================================================================
