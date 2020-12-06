@@ -188,7 +188,7 @@ Al finalizar el proceso de parsing, estarán todas las condiciones creadas para 
 
 \section{Chequeo semántico}
 
-Para realizar el chequeo semántico se utilizó un \lstinline|visitor| de una pasada que realiza las siguientes acciones sobre un nodo:
+Para realizar el chequeo semántico se utilizó un \lstinline|visitor| (implementado en \lstinline|src/semantic|) de una pasada que realiza las siguientes acciones sobre un nodo:
 
 \begin{itemize}
 	\item Aplica el \lstinline|visitor| correspondiente a las expresiones hijas involucradas y de éste se obtiene el tipo estático inferido de cada una. 
@@ -197,7 +197,7 @@ Para realizar el chequeo semántico se utilizó un \lstinline|visitor| de una pa
 \end{itemize}
 
 \subsection{CoolType}
-Para auxiliarnos en el chequeo semántico definimos una clase \lstinline|CoolType| que envuelve la significancia de un tipo en \textit{COOL}. 
+Para auxiliarnos en el chequeo semántico definimos una clase \lstinline|CoolType| en \lstinline|src/cool_types| que envuelve la significancia de un tipo en \textit{COOL}. 
 
 Contiene los atributos:
 
@@ -217,9 +217,12 @@ y los métodos:
 	\item \lstinline|get_method|: Obtiene el método determinado por el argumento \lstinline|id|, teniendo en cuenta si pudo haber sido definido por la clase guardada en \lstinline|parent|. 
 	\item \lstinline|get_all_methods|: Obtiene todos los métodos definidos por la clase, así como los definidos por alguna clase superior en su línea de herencia. 
 	\item \lstinline|add_method|: Agrega el método con nombre \lstinline|id| en el conjunto de métodos de la clase. Esta función tiene implícitas las reglas de definición de métodos. 
-	
-	\item Análogos métodos se declaran para los atributos, respondiendo a las reglas de análisis semántico. 
+	\item \lstinline|add_attr|: Agrega el atributo con nombre \lstinline|id| en el conjunto de métodos de la clase. Esta función tiene implícitas las reglas de definición de atributos. 
 \end{itemize}
+
+Tipos built-in
+
+Los tipos built-in \lstinline|ObjectType, IOType, StringType, IntType, BooltType| son declarados en el archivo \lstinline|src/cool_types/types.py|, asi como sus metodos de instancia.
 
 \section{Generación de código}
 
