@@ -1,4 +1,4 @@
-%===================================================================================
+	%===================================================================================
 % JORNADA CIENTÍFICA ESTUDIANTIL - MATCOM, UH
 %===================================================================================
 % Esta plantilla ha sido diseñada para ser usada en los artículos de la
@@ -178,7 +178,7 @@ Cada regla de la gramática será definida por una función donde el \textbf{str
 	\begin{algorithmic}
 		\STATE def p\_atom\_atring(p):
 		\STATE $\;\;\; $ '''atom : STRING'''
-		\STATE $\;\;\; $ p[0].add\_location(p.lineno(1),
+		\STATE $\;\;\; $ p[0].add\_location(p.lineno(1)),
 		\STATE $\;\;\; $ p[0] = StringNode(p[1])
 		\STATE $\;\;\; $ find\_column(p.lexer.lexdata, p.lexpos(1)))
 	\end{algorithmic}
@@ -207,15 +207,18 @@ Contiene los atributos:
 	\item \lstinline|parent|: Es una instancia \lstinline|CoolType| que representa el padre de la clase definida. 
 	\item \lstinline|methods|: Contiene todos los métodos definidos por la clase (De tipo \lstinline|CoolTypeMethod|). 
 	\item \lstinline|attributes|: Contiene los atributos definidos por la clase (De tipo \lstinline|CoolTypeAttribute|).
+	\item \lstinline|childs|: Contiene todas los \lstinline|CoolType| que heredan directamente de la clase. 
+	\item \lstinline|order_interval|: Atributo que define un intervalo $(x, y)$ tal que si $A\leq B$, entonces $(x_A, y_A)$ estará contenido en $(x_B, y_B)$. Más adelante explicaremos para qué se utiliza este atributo. 
 \end{itemize}
 
 y los métodos: 
 
 \begin{itemize}
 	\item \lstinline|get_method|: Obtiene el método determinado por el argumento \lstinline|id|, teniendo en cuenta si pudo haber sido definido por la clase guardada en \lstinline|parent|. 
-	\item \lstinline|get_all_methods|: Obtiene todos los métodos definidos por la clase. 
+	\item \lstinline|get_all_methods|: Obtiene todos los métodos definidos por la clase, así como los definidos por alguna clase superior en su línea de herencia. 
 	\item \lstinline|add_method|: Agrega el método con nombre \lstinline|id| en el conjunto de métodos de la clase. Esta función tiene implícitas las reglas de definición de métodos. 
-	\item Análogos métodos se declaran para los atributos. 
+	
+	\item Análogos métodos se declaran para los atributos, respondiendo a las reglas de análisis semántico. 
 \end{itemize}
 
 \section{Generación de código}
@@ -240,7 +243,7 @@ Un programa CIL se representa con un \lstinline|ProgramNode| y consta de cuatro 
 Un nodo de tipo \textit{data} consiste en una constante de tipo \textit{string} y una etiqueta que lo mapea:
 
 \begin{center}
-	\lstinline|data_1="Hello world\n"|
+	\lstinline|data_1: "Hello world\n"|
 \end{center}
 
 \subparagraph{TypeNode}
@@ -268,7 +271,7 @@ Para convertir un AST de \textit{COOL} a un AST de CIL visitaremos cada uno de l
 \subsubsection{Ejemplo: asignación}
 Sea el código en \textit{COOL} \lstinline|c<-a+b|, parseado a un árbol de la forma \lstinline|AssignNode(VarNode(a),...expression...)| y con chequeo semántico perfecto. 
 
-\subparagraph{AssignNode}: El nodo más externo creará un \lstinline|CILBlock| de la forma:
+El nodo más externo creará un \lstinline|CILBlock| de la forma:
 	\begin{lstlisting}
 	
 	body = concat(expression.body, [ 
@@ -299,8 +302,8 @@ Los registros se utilizaron de la siguiente forma:
 
 \subsubsection{Utilización de memoria}
 
-\subparagraph{Representación de tipos:}
-	Los tipos se representan en memoria de la siguiente forma:
+\subparagraph{Representación de instancia:}
+	Una instancia se representa en memoria de la siguiente forma:
 	\includegraphics[scale=0.7]{Instancia.png}
 
 \subparagraph{Paso de argumentos:}
@@ -343,16 +346,30 @@ Para decidir qué función se debe llamar, basta localizar el \textit{offset} pr
 			\item Liberar el espacio de la pila correspondiente a todas las variables locales. 
 			\item Realizar un salto al contenido del registro \lstinline|$ra|. 
 		\end{enumerate}
-\label{end}
+
 
 \subsubsection{Orden de herencia en MIPS para instrucción \lstinline|case|}
-La relación de herencia se determina a través de un atributo llamado \textit{order}, creado desde la generación de código intermedio como atributo especial. Si A hereda de B, entonces seguramente $order(A)<order(B)$. 
+La relación de herencia se determina a través de unos atributos llamados \lstinline|order| y \lstinline|min_order|, creado desde la generación de código intermedio como atributo especial. Si A hereda de B, entonces seguramente \lstinline|min_order(B)<min_order(A)<order(A)<min_order(B)|. 
 
-De esta forma garantizamos que en la ejecución de una instrucción \textit{case}, podamos decidirnos por la rama cuyo $order(type)$ se el menor tal que $order(type)\geq order(type(expression))$. 
+De esta forma garantizamos que en la ejecución de una instrucción \textit{case}, podamos decidirnos por la primera rama cuyo intervalo definido por \lstinline|(min_order(x), order(x))| esté contenido en en el mismo intervalo para el tipo de la expresión. Para garantizar que la primera sea la correcta, las ramas del \textit{case} se ordenan en tiempo de compilación por niveles de herencia.  
 
 \subsubsection{Constructor de instancia en MIPS}
 
 Para cada uno de los tipos, definimos una función especial llamada \lstinline|__init__|, que se crea en la fase de generación de código intermedio y se encarga de manejar la inicialización de los atributos heredados y los propios. 
+
+\subsubsection{Manejo de \textit{strings} en memoria}
+
+\begin{itemize}
+	\item Un \textit{string} constante se reserva en la sección data en el inicio del programa, la estructura data que contiene los \textit{strings} esta construida desde la fase de generación de código intermedio.
+	\item El espacio para guardar un \textit{string} que introduce el usuario se reserva utilizando el \lstinline|syscall| definido por \lstinline|sbrk| con un tamaño de \textit{buffer} de \textit{1024 bytes}. 
+	\item El espacio para un \textit{string} resultante de una operación de cadena se reserva con el \lstinline|syscall| definido por \lstinline|sbrk| con el tamaño exacto necesario, que se conoce en ejecución a través de los argumentos del llamado.  
+\end{itemize}
+
+\subsubsection{Determinación del tipo en ejecución}
+
+Dentro de cada instancia, como representamos anteriormente, se guarda un atributo especial que consiste en la dirección en memoria de la tabla virtual del tipo de ésta. Para acceder a esta dirección construimos una instrucción apropiada desde la fase de código intermedio, que se traduce en MIPS al acceso directo a la dirección en memoria predefinida donde sabemos que se encuentra este atributo. 
+
+\label{end}
 
 \end{document}
 
