@@ -192,7 +192,7 @@ Para realizar el chequeo semántico se utilizó un \lstinline|visitor| de una pa
 
 \begin{itemize}
 	\item Aplica el \lstinline|visitor| correspondiente a las expresiones hijas involucradas y de éste se obtiene el tipo estático inferido de cada una. 
-	\item Se aplican las reglas de chequeo de tipos definidas para cada una de las operaciones para detectar errores. 
+	\item Se aplican las reglas de chequeo de tipos definidas en cada uno de los \lstinline|visitors| de las expresiones para detectar errores. 
 	\item Se infiere el tipo estático de la expresión representada por el nodo y se retorna para ser utilizado por sus padres. 
 \end{itemize}
 
@@ -368,6 +368,7 @@ Para cada uno de los tipos, definimos una función especial llamada \lstinline|_
 \subsubsection{Determinación del tipo en ejecución}
 
 Dentro de cada instancia, como representamos anteriormente, se guarda un atributo especial que consiste en la dirección en memoria de la tabla virtual del tipo de ésta. Para acceder a esta dirección construimos una instrucción apropiada desde la fase de código intermedio, que se traduce en MIPS al acceso directo a la dirección en memoria predefinida donde sabemos que se encuentra este atributo. 
+
 
 \label{end}
 
