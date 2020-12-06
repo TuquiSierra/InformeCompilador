@@ -136,12 +136,12 @@
 %-----------------------------------------------------------------------------------
 \section{Lexer y Parser}
 
-Para resolver la sintáctica del compilador se utilizó el módulo de Python \textbf{PLY} que implementa las populares herramientas de construcción de compiladores \textit{lex} y \textit{yacc}, generando el primer \textbf{AST} del proceso de compilación.
+Para resolver la sintáctica del compilador se utilizó el módulo de \textit{Python} \textbf{PLY} que implementa las populares herramientas de construcción de compiladores \textit{lex} y \textit{yacc}, que utilizamos para generar el primer \textbf{AST} del proceso de compilación.
 
 \subsection{Tokenización con lex}
 
 \begin{enumerate}
-	\item Creación de los tokens: 
+	\item \textbf{Creación de los tokens:} 
 	Una instancia de objeto \textbf{LexToken} (llamemos a este objeto \textbf{t} ) tiene los siguientes atributos:
 	\begin{itemize}
 		\item \textbf{t.type} que es el tipo de token (por ejemplo: 'INT' , 'PLUS' , etc.).
@@ -149,7 +149,8 @@ Para resolver la sintáctica del compilador se utilizó el módulo de Python \te
 		\item \textbf{t.lineno} que es el número de línea actual
 	\end{itemize} 
 
-	\item Creación de las reglas: Las reglas de expresiones regulares pueden definirse como un \textbf{string} o como una función. En cualquier caso, el nombre de la variable tiene el prefijo \textbf{t\_} para denotar que es una regla para hacer coincidir tokens.
+	\item \textbf{Creación de las reglas: }
+	Las reglas de expresiones regulares pueden definirse como un \textbf{string} o como una función. En cualquier caso, el nombre de la variable tiene el prefijo \textbf{t\_} para denotar que es una regla para hacer coincidir \textit{tokens}.
 	
 	Para tokens simples, la expresión regular se especificó como \textbf{string}: $t\_PLUS = r'\backslash+'$
 	
@@ -164,7 +165,7 @@ Para resolver la sintáctica del compilador se utilizó el módulo de Python \te
 			\STATE $\;\;\; $ t.lexer.begin('string')
 		\end{algorithmic}
 	\end{algorithm}
-	\item Creacion del lexer: $ lexer = lex.lex()$
+	\item \textbf{Creación del lexer:} \lstinline|lexer = lex.lex()|
 \end{enumerate}
 
 \subsection{Parsing con yacc}
@@ -184,7 +185,7 @@ Cada regla de la gramática será definida por una función donde el \textbf{str
 	\end{algorithmic}
 \end{algorithm}
 
-Al finalizar el proceso de parsing, estarán todas las condiciones creadas para iniciar el chequeo semántico.
+Al finalizar el proceso de \textit{parsing}, estarán todas las condiciones creadas para iniciar el chequeo semántico.
 
 \section{Chequeo semántico}
 
@@ -218,11 +219,14 @@ y los métodos:
 	\item \lstinline|get_all_methods|: Obtiene todos los métodos definidos por la clase, así como los definidos por alguna clase superior en su línea de herencia. 
 	\item \lstinline|add_method|: Agrega el método con nombre \lstinline|id| en el conjunto de métodos de la clase. Esta función tiene implícitas las reglas de definición de métodos. 
 	\item \lstinline|add_attr|: Agrega el atributo con nombre \lstinline|id| en el conjunto de métodos de la clase. Esta función tiene implícitas las reglas de definición de atributos. 
+	\item \lstinline|get_all_attributes|: Obtiene todos los atributos, heredados y propios. 
+	\item \lstinline|get_self_attributes|: Obtiene todos los atributos propios. 
+	
 \end{itemize}
 
-Tipos built-in
+\subparagraph{Tipos \textit{built-in}:}
 
-Los tipos built-in \lstinline|ObjectType, IOType, StringType, IntType, BooltType| son declarados en el archivo \lstinline|src/cool_types/types.py|, asi como sus metodos de instancia.
+Los tipos \textit{built-in} \lstinline|ObjectType, IOType, StringType, IntType, BooltType| son declarados en el archivo \lstinline|src/cool_types/types.py|, así como sus métodos de instancia.
 
 \section{Generación de código}
 
@@ -236,22 +240,22 @@ Para generar un AST de CIL utilizamos el patrón \lstinline|visitor| sobre los n
 Un programa CIL se representa con un \lstinline|ProgramNode| y consta de cuatro partes:
 
 \begin{enumerate}
-	\item Una sección \textit{data}, representada por una lista de \lstinline|DataNode|, que a su vez consiste en la declaración de una constante involucrada en el programa. 
-	\item Una sección \textit{types}, representada por una lista de \lstinline|TypeNode|, que a su vez consiste en la declaración de un tipo con los identificadores de sus métodos y sus atributos. 
-	\item Una sección \textit{text}, representada por una lista de \lstinline|DefFuncNode|, que a su vez consiste en la declaración de una función.
+	\item Una sección \lstinline|.data|, representada por una lista de \lstinline|DataNode|, que a su vez consiste en la declaración de una constante involucrada en el programa. 
+	\item Una sección \lstinline|.types|, representada por una lista de \lstinline|TypeNode|, que a su vez consiste en la declaración de un tipo con los identificadores de sus métodos y sus atributos. 
+	\item Una sección \lstinline|.text|, representada por una lista de \lstinline|DefFuncNode|, que a su vez consiste en la declaración de una función.
 \end{enumerate}
 
-\subparagraph{DataNode}
+\subparagraph{\lstinline|DataNode|:}
 
-Un nodo de tipo \textit{data} consiste en una constante de tipo \textit{string} y una etiqueta que lo mapea:
+Un nodo de tipo \lstinline|.data| consiste en una constante de tipo \textit{string} y una etiqueta que lo mapea:
 
 \begin{center}
 	\lstinline|data_1: "Hello world\n"|
 \end{center}
 
-\subparagraph{TypeNode}
+\subparagraph{\lstinline|TypeNode|:}
 
-Un nodo de tipo \textit{type} consiste en una etiqueta que representa el nombre del tipo y un conjunto de \textit{features} que pueden ser atributos con su tipo o métodos. Un método será mapeado al método real a ejecutar de ser llamado éste. Se representa de la forma:
+Un nodo de tipo \lstinline|.type| consiste en una etiqueta que representa el nombre del tipo y un conjunto de \textit{features} que pueden ser atributos con su tipo o métodos. Un método será mapeado al método real a ejecutar de ser llamado éste. Se representa de la forma:
 
 \begin{center}
 	\begin{lstlisting}
@@ -262,9 +266,8 @@ Un nodo de tipo \textit{type} consiste en una etiqueta que representa el nombre 
 	\end{lstlisting}
 \end{center}
 
-\subparagraph{DefFuncNode}
+\subparagraph{\lstinline|DefFuncNode|:}
 Un nodo de tipo {deffunc} constituye la declaración de un cuerpo de función, dentro de ella se ejecutará un bloque de código CIL, siguiendo las convenciones usuales. 
-
 
 \subsubsection{CILBlock}
 Para representar un bloque abstracto de código CIL utilizamos una clase llamada \lstinline|CILBlock| que contiene un \lstinline|body|, un \lstinline|locals| y un \lstinline|value|. 
@@ -335,12 +338,13 @@ Para decidir qué función se debe llamar, basta localizar el \textit{offset} pr
 		\begin{enumerate}
 			\item Se salvan los registros utilizados: \lstinline|$fp, $ra|. (son los únicos que trascienden un llamado de función).
 			\item Se pasan los argumentos a la pila.
-			\item Se realiza la instrucción \lstinline|Jal function_name|, que guarda la dirección de retorno en el registro \lstinline|$ra|.
+			\item Se realiza la instrucción \lstinline|Jal function_name| en el caso de saber la función precisa a llamar; de lo contrario, se utiliza la \textit{Tabla Virtual} y el salto se realiza utilizando la instrucción \lstinline|Jalr $ti|, donde \lstinline|$ti| guarda la dirección de la función correcta. En cualquier caso que guarda la dirección de retorno en el registro \lstinline|$ra|.
 			\item Se sacan los argumentos de la pila. 
 			\item Se restauran los registros. 
 			\item Se toma el valor de retorno de \lstinline|$v0|. 
 		\end{enumerate}
-	La función llamada debe:
+		
+\subparagraph{La función llamada debe:}
 		\begin{enumerate}
 			\item Mover \lstinline|$fp| a donde se encuentra \lstinline|$sp|. 
 			\item Tomar sus argumentos de la pila. 
@@ -352,7 +356,7 @@ Para decidir qué función se debe llamar, basta localizar el \textit{offset} pr
 
 
 \subsubsection{Orden de herencia en MIPS para instrucción \lstinline|case|}
-La relación de herencia se determina a través de unos atributos llamados \lstinline|order| y \lstinline|min_order|, creado desde la generación de código intermedio como atributo especial. Si A hereda de B, entonces seguramente \lstinline|min_order(B)<min_order(A)<order(A)<min_order(B)|. 
+La relación de herencia se determina a través de unos atributos llamados \lstinline|order| y \lstinline|min_order|, creado desde la generación de código intermedio como atributo especial. Si $A$ hereda de $B$, entonces seguramente \lstinline|min_order(B)<min_order(A)<order(A)<min_order(B)|. 
 
 De esta forma garantizamos que en la ejecución de una instrucción \textit{case}, podamos decidirnos por la primera rama cuyo intervalo definido por \lstinline|(min_order(x), order(x))| esté contenido en en el mismo intervalo para el tipo de la expresión. Para garantizar que la primera sea la correcta, las ramas del \textit{case} se ordenan en tiempo de compilación por niveles de herencia.  
 
@@ -363,8 +367,8 @@ Para cada uno de los tipos, definimos una función especial llamada \lstinline|_
 \subsubsection{Manejo de \textit{strings} en memoria}
 
 \begin{itemize}
-	\item Un \textit{string} constante se reserva en la sección data en el inicio del programa, la estructura data que contiene los \textit{strings} esta construida desde la fase de generación de código intermedio.
-	\item El espacio para guardar un \textit{string} que introduce el usuario se reserva utilizando el \lstinline|syscall| definido por \lstinline|sbrk| con un tamaño de \textit{buffer} de \textit{1024 bytes}. 
+	\item Un \textit{string} constante se reserva en la sección \lstinline|.data| en el inicio del programa, la estructura que contiene dichos \textit{strings} está construida desde la fase de generación de código intermedio.
+	\item El espacio para guardar un \textit{string} que introduce el usuario se reserva utilizando el \lstinline|syscall| definido por \lstinline|sbrk| con un tamaño de \textit{buffer} de \lstinline|1024 bytes|. 
 	\item El espacio para un \textit{string} resultante de una operación de cadena se reserva con el \lstinline|syscall| definido por \lstinline|sbrk| con el tamaño exacto necesario, que se conoce en ejecución a través de los argumentos del llamado.  
 \end{itemize}
 
