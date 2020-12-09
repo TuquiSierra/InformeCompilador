@@ -177,17 +177,17 @@ La gramática que se utilizó para el proceso de parsing es la sigiente:
 	program -> class_list
 	
 	class_list -> def_class ; class_list
-	| def_class ;
+	            | def_class ;
 	
 	def_class -> CLASS TYPE { feature_list }
-	| CLASS TYPE INHERITS TYPE { feature_list }
+	           | CLASS TYPE INHERITS TYPE { feature_list }
 	
 	feature_list -> def_attr ; feature_list
-	| def_func ; feature_list
-	| empty
+	              | def_func ; feature_list
+	              | empty
 	
 	def_attr -> ID : TYPE <- expr
-	| ID : TYPE
+	          | ID : TYPE
 	
 	def_func -> ID ( params ) : TYPE { expr }
 	
@@ -196,50 +196,50 @@ La gramática que se utilizó para el proceso de parsing es la sigiente:
 	params -> empty
 	
 	param_list -> param , param_list
-	| param empty
+	            | param empty
 	
 	param -> ID : TYPE
 	
 	expr -> LET let_attrs IN expr
-	| CASE expr OF case_list ESAC
-	| IF expr THEN expr ELSE expr FI
-	| WHILE expr LOOP expr POOL
+	      | CASE expr OF case_list ESAC
+	      | IF expr THEN expr ELSE expr FI
+	      | WHILE expr LOOP expr POOL
 	
 	expr -> ID <- expr
 	
-	expr -> expr @ TYPE . ID ( arg_list )
-	| expr . ID ( arg_list )
-	| ID ( arg_list )
-	
 	expr -> expr + expr
-	| expr - expr
-	| expr * expr
-	| expr \ expr
-	| expr < expr
-	| expr <= expr
-	| expr = expr
+	      | expr - expr
+	      | expr * expr
+	      | expr \ expr
+	      | expr < expr
+	      | expr <= expr
+	      | expr = expr
+	
+	expr -> expr @ TYPE . ID ( arg_list )
+	      | expr . ID ( arg_list )
+	      | ID ( arg_list )
 	
 	expr -> NOT expr
-	| ISVOID expr
-	| LNOT expr
+	      | ISVOID expr
+	      | LNOT expr
 	
 	expr -> ( expr )
 	
 	expr -> atom
 	
 	let_attrs -> def_attr , let_attrs
-	| def_attr
+	           | def_attr
 	
 	case_list -> case_elem ; case_list
-	| case_elem ;
+	           | case_elem ;
 	
 	case_elem -> ID : TYPE => expr
 	
 	arg_list -> arg_list_ne
-	| empty
+	          | empty
 	
 	arg_list_ne -> expr , arg_list_ne
-	| expr
+	             | expr
 	
 	atom -> INT
 	atom -> ID
@@ -251,7 +251,7 @@ La gramática que se utilizó para el proceso de parsing es la sigiente:
 	block -> { block_list }
 	
 	block_list -> expr ; block_list
-	| expr ;
+	            | expr ;
 	
 \end{verbatim}
 
@@ -458,6 +458,9 @@ Para cada uno de los tipos, definimos una función especial llamada \lstinline|_
 
 Dentro de cada instancia, como representamos anteriormente, se guarda un atributo especial que consiste en la dirección en memoria de la tabla virtual del tipo de ésta. Para acceder a esta dirección construimos una instrucción apropiada desde la fase de código intermedio, que se traduce en MIPS al acceso directo a la dirección en memoria predefinida donde sabemos que se encuentra este atributo. 
 
+\section*{Repositorio}
+
+\url{https://github.com/stdevAdrianPaez/cool-compiler-2020}
 
 \label{end}
 
