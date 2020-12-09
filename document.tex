@@ -314,6 +314,7 @@ Los registros se utilizaron de la siguiente forma:
 
 \subparagraph{Paso de argumentos:}
 	 En el paso de argumentos utilizamos la pila, liberando la memoria utilizada al terminar la ejecución de la función. 
+	 
 \subparagraph{Creación de una instancia:}
 	Para la creación de una instancia reservamos memoria utilizando \lstinline|sbrk|. Cada una de las instancias tendrá como atributos especiales su tipo y su tamaño, en la primera y última posición respectivamente; por tanto, al reservar memoria tenemos que hacerlo con un tamaño igual a la cantidad de atributos más dos.
 
