@@ -170,18 +170,99 @@ Para resolver la sintáctica del compilador se utilizó el módulo de \textit{Py
 
 \subsection{Parsing con yacc}
 
-Una vez terminado el proceso de tokenización se realiza el proceso de parsing utilizando la herramienta \textit{yacc}. Luego de la creación de una gramática libre del contexto \textit{yacc} generará un parser \textbf{LALR}.\\
+Una vez terminado el proceso de tokenización se realiza el proceso de parsing utilizando la herramienta \textit{yacc}. Luego de la creación de una gramática libre del contexto \textit{yacc} generará un parser \textbf{LALR}.
+
+La gramática que se utilizó para el proceso de parsing es la sigiente:
+\begin{verbatim}
+	program -> class_list
+	
+	class_list -> def_class ; class_list
+	| def_class ;
+	
+	def_class -> CLASS TYPE { feature_list }
+	| CLASS TYPE INHERITS TYPE { feature_list }
+	
+	feature_list -> def_attr ; feature_list
+	| def_func ; feature_list
+	| empty
+	
+	def_attr -> ID : TYPE <- expr
+	| ID : TYPE
+	
+	def_func -> ID ( params ) : TYPE { expr }
+	
+	params -> param_list
+	
+	params -> empty
+	
+	param_list -> param , param_list
+	| param empty
+	
+	param -> ID : TYPE
+	
+	expr -> LET let_attrs IN expr
+	| CASE expr OF case_list ESAC
+	| IF expr THEN expr ELSE expr FI
+	| WHILE expr LOOP expr POOL
+	
+	expr -> ID <- expr
+	
+	expr -> expr @ TYPE . ID ( arg_list )
+	| expr . ID ( arg_list )
+	| ID ( arg_list )
+	
+	expr -> expr + expr
+	| expr - expr
+	| expr * expr
+	| expr \ expr
+	| expr < expr
+	| expr <= expr
+	| expr = expr
+	
+	expr -> NOT expr
+	| ISVOID expr
+	| LNOT expr
+	
+	expr -> ( expr )
+	
+	expr -> atom
+	
+	let_attrs -> def_attr , let_attrs
+	| def_attr
+	
+	case_list -> case_elem ; case_list
+	| case_elem ;
+	
+	case_elem -> ID : TYPE => expr
+	
+	arg_list -> arg_list_ne
+	| empty
+	
+	arg_list_ne -> expr , arg_list_ne
+	| expr
+	
+	atom -> INT
+	atom -> ID
+	atom -> NEW TYPE
+	atom -> block
+	atom -> BOOL
+	atom -> STRING
+	
+	block -> { block_list }
+	
+	block_list -> expr ; block_list
+	| expr ;
+	
+\end{verbatim}
 
 Cada regla de la gramática será definida por una función donde el \textbf{string} de documentación de esa función contiene la especificación apropiada. Las declaraciones que conforman el cuerpo de la función implementan las acciones semánticas de la regla junto con las definiciones de los nodos del \textbf{AST}.
 
 \begin{algorithm}
 	\caption{Ejemplo 2}
 	\begin{algorithmic}
-		\STATE def p\_atom\_atring(p):
-		\STATE $\;\;\; $ '''atom : STRING'''
-		\STATE $\;\;\; $ p[0].add\_location(p.lineno(1)),
-		\STATE $\;\;\; $ p[0] = StringNode(p[1])
-		\STATE $\;\;\; $ find\_column(p.lexer.lexdata, p.lexpos(1)))
+		\STATE def p\_program(p):
+		\STATE $\;\;\; $ '''program : class\_list'''
+		\STATE $\;\;\; $ p[0] = ProgramNode(p[1])
 	\end{algorithmic}
 \end{algorithm}
 
